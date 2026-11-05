@@ -1,4 +1,4 @@
-// Plugin oficial de PelisPlus para Kino (v8.0.1)
+// Plugin oficial de PelisPlus para Kino (v8.5.0)
 import { makeBrowse } from "./browse/index.js";
 import {
   BASE_URL,
@@ -8,7 +8,7 @@ import {
   resolvePelisPlus,
 } from "./pelisplus.js";
 
-const PLUGIN_VERSION = "8.0.1";
+const PLUGIN_VERSION = "8.5.0";
 const AUTHOR_TAG = "Creado por JuandreXter";
 const LOG_PREFIX = `[PelisPlus v${PLUGIN_VERSION}]`;
 

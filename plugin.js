@@ -148,7 +148,7 @@ var WORDS_RAW = {
   aboutTitle: ["Acerca de PelisPlus", "About PelisPlus"],
   aboutDesc: ["Plugin oficial de cat\xE1logo y reproducci\xF3n en alta definici\xF3n para Kino.", "Official HD catalog and playback plugin for Kino."],
   aboutAuthor: ["Creado por JuandreXter", "Created by JuandreXter"],
-  aboutVersion: ["Versi\xF3n 8.0.0", "Version 8.0.0"],
+  aboutVersion: ["Versi\xF3n 8.5.0", "Version 8.5.0"],
   watchNow: ["Reproducir", "Play"],
   moreInfo: ["Ver detalles", "More details"],
   brWatch: ["Reproducir", "Play"],
@@ -1109,7 +1109,7 @@ async function resolvePelisPlus(ref, preferredLang = "latino") {
 }
 
 // src/plugin.js
-var PLUGIN_VERSION = "8.0.1";
+var PLUGIN_VERSION = "8.5.0";
 var AUTHOR_TAG = "Creado por JuandreXter";
 var LOG_PREFIX = `[PelisPlus v${PLUGIN_VERSION}]`;
 function printBanner() {

@@ -1,16 +1,16 @@
-# PelisPlus — Plugin para Kino (v8.0.1)
+# PelisPlus — Plugin para Kino (v8.5.0)
 
 Plugin oficial de PelisPlus para la aplicación [Kino](https://kino.app). Ofrece catálogo completo de películas, series de televisión y anime en alta definición con audio en Español Latino, Castellano y Subtitulado, búsqueda nativa, integración con `kino.meta` (TMDB) y una interfaz nativa declarativa optimizada para Android TV (D-pad y control remoto) y dispositivos móviles.
 
 > **Autor**: JuanDEVYT  
-> **Versión**: 8.0.1  
+> **Versión**: 8.5.0  
 > **Créditos**: Creado por JuandreXter
 
 ---
 
 ## Características
 
-- **Identificación en logs**: Muestra al inicio y en cada acción el banner oficial `[PelisPlus v8.0.1] Creado por JuandreXter` con trazabilidad completa de peticiones.
+- **Identificación en logs**: Muestra al inicio y en cada acción el banner oficial `[PelisPlus v8.5.0] Creado por JuandreXter` con trazabilidad completa de peticiones.
 - **Búsqueda robusta**: Consulta directa sobre el motor de búsqueda en tiempo real de PelisPlus (`/?s=...`), admitiendo títulos de películas, series y anime.
 - **Hero Slider con Backdrops 1080p y Logos**: Portada con carrusel destacado interactivo, sinopsis, año y controles directos de reproducción y detalles.
 - **Rieles temáticos dinámicos**:

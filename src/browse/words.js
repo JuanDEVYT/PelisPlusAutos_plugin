@@ -27,7 +27,7 @@ const WORDS_RAW = {
   aboutTitle: ["Acerca de PelisPlus", "About PelisPlus"],
   aboutDesc: ["Plugin oficial de catálogo y reproducción en alta definición para Kino.", "Official HD catalog and playback plugin for Kino."],
   aboutAuthor: ["Creado por JuandreXter", "Created by JuandreXter"],
-  aboutVersion: ["Versión 8.0.0", "Version 8.0.0"],
+  aboutVersion: ["Versión 8.5.0", "Version 8.5.0"],
   watchNow: ["Reproducir", "Play"],
   moreInfo: ["Ver detalles", "More details"],
   brWatch: ["Reproducir", "Play"],

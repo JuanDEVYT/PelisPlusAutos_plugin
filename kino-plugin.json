@@ -1,7 +1,7 @@
 {
   "id": "pelisplus",
   "name": "PelisPlus",
-  "version": "8.0.1",
+  "version": "8.5.0",
   "apiVersion": 6,
   "entry": "plugin.js",
   "icon": "icon.png",
