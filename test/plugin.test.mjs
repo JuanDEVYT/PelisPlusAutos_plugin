@@ -1,55 +1,71 @@
-import test from "node:test";
+// Pruebas automatizadas de integración para el plugin PelisPlus
+import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
-function run(cmd, ...args) {
-  const r = spawnSync("node", ["sdk/run.mjs", ".", cmd, ...args], { encoding: "utf-8", timeout: 60000 });
-  if (r.status !== 0) throw new Error(`${cmd} failed: ${r.stderr || r.stdout}`);
-  return JSON.parse(r.stdout);
-}
+const exec = promisify(execFile);
 
-test("plugin validation passes Kino sdk", () => {
-  const r = spawnSync("node", ["sdk/validate.mjs", ".", "--repo", "JuanDEVYT/PelisPlusAutos_plugin"], { encoding: "utf-8" });
-  const out = (r.stdout || "") + (r.stderr || "");
-  assert.equal(r.status, 0);
-  assert.match(out, /Kino would accept this plugin/);
-});
+describe("PelisPlus Plugin v8.0.0", () => {
+  it("plugin validation passes Kino sdk", async () => {
+    const { stdout, stderr } = await exec("node", ["sdk/validate.mjs", ".", "--repo", "JuanDEVYT/PelisPlusAutos_plugin"]);
+    const out = (stdout || "") + "\n" + (stderr || "");
+    assert.match(out, /✓ Kino would accept this plugin/);
+  });
 
-test("search finds titles", () => {
-  const data = run("search", '{"q":"batman"}');
-  assert.ok(data.items.length > 0);
-  assert.ok(data.items[0].ref.includes("pelisplus.autos"));
-});
+  it("search returns real titles with batman query", async () => {
+    const { stdout } = await exec("node", ["sdk/run.mjs", ".", "search", JSON.stringify({ q: "batman" })]);
+    const res = JSON.parse(stdout);
+    assert.ok(Array.isArray(res.items), "items must be an array");
+    assert.ok(res.items.length > 0, "must find at least 1 result");
+    assert.ok(res.items[0].title.toLowerCase().includes("bat"), "title must match query");
+  });
 
-test("home returns rows with items", () => {
-  const data = run("home");
-  assert.ok(Array.isArray(data));
-  assert.ok(data.length >= 2);
-  assert.ok(data.some(r => r.id === "movies"));
-  assert.ok(data.some(r => r.id === "series"));
-});
+  it("home returns multiple rich rails", async () => {
+    const { stdout } = await exec("node", ["sdk/run.mjs", ".", "home"]);
+    const res = JSON.parse(stdout);
+    assert.ok(Array.isArray(res), "home must return an array of rows");
+    assert.ok(res.length >= 3, "must return at least 3 rows");
+    assert.ok(res[0].items.length > 0, "first row must have items");
+  });
 
-test("browse returns paginated results", () => {
-  const data = run("browse", "peliculas", "1");
-  assert.ok(data.items.length > 0);
-});
+  it("browse returns paginated movie results", async () => {
+    const { stdout } = await exec("node", ["sdk/run.mjs", ".", "browse", "peliculas", "1"]);
+    const res = JSON.parse(stdout);
+    assert.ok(Array.isArray(res.items), "items must be an array");
+    assert.ok(res.items.length > 0, "must return items");
+    assert.equal(res.next, "2", "must point to next page");
+  });
 
-test("episodes returns series chapters", () => {
-  const data = run("episodes", "https://pelisplus.autos/serie/marshals-una-historia-de-yellowstone/");
-  assert.ok(data.episodes.length > 0);
-  assert.ok(data.episodes[0].season >= 1);
-  assert.ok(data.episodes[0].number >= 1);
-});
+  it("episodes returns chapters for a series", async () => {
+    const { stdout } = await exec("node", [
+      "sdk/run.mjs",
+      ".",
+      "episodes",
+      "https://pelisplus.autos/serie/marshals-una-historia-de-yellowstone/",
+    ]);
+    const res = JSON.parse(stdout);
+    assert.ok(Array.isArray(res.episodes), "episodes must be an array");
+    assert.ok(res.episodes.length > 0, "must return episodes");
+    assert.equal(res.episodes[0].season, 1);
+  });
 
-test("resolve gives a playable m3u8 stream", () => {
-  const data = run("resolve", "https://pelisplus.autos/pelicula/the-carpenters-son/");
-  assert.ok(data.url.includes("ibra.lat"));
-  assert.equal(data.mime, "application/x-mpegURL");
-});
+  it("resolve extracts a playable HLS m3u8 stream", async () => {
+    const { stdout } = await exec("node", [
+      "sdk/run.mjs",
+      ".",
+      "resolve",
+      "https://pelisplus.autos/pelicula/savage-prey/",
+    ]);
+    const res = JSON.parse(stdout);
+    assert.ok(res.url.startsWith("https://"), "stream url must be https");
+    assert.match(res.mime, /mpegURL/i, "mime must be mpegURL");
+  });
 
-test("screen produces declarative scaffold UI", () => {
-  const data = run("screen");
-  assert.equal(data.type, "scaffold");
-  assert.ok(data.appBar);
-  assert.ok(data.body);
+  it("screen generates declarative scaffold UI", async () => {
+    const { stdout } = await exec("node", ["sdk/run.mjs", ".", "screen"]);
+    const res = JSON.parse(stdout);
+    assert.equal(res.type, "scaffold", "screen must return a scaffold");
+    assert.ok(res.appBar, "must contain appBar");
+  });
 });

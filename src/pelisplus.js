@@ -1,106 +1,231 @@
-// PelisPlus Autos scraper and Nupload HLS resolver.
-import { fetchHtml } from "./utils.js";
-
+// Scraper y resolutor para PelisPlus (pelisplus.autos)
 export const BASE_URL = "https://pelisplus.autos";
 
-export async function pageHtml(path) {
-  const url = path.startsWith("http") ? path : `${BASE_URL}${path}`;
-  const res = await fetchHtml(url);
+const HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Referer": "https://pelisplus.autos/",
+  "Accept":
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
+};
+
+export async function fetchHtml(url, options = {}) {
+  const client =
+    typeof kino !== "undefined" && kino.fetch
+      ? kino.fetch.bind(kino)
+      : globalThis.fetch;
+  const res = await client(url, {
+    headers: {
+      ...HEADERS,
+      ...(options.headers || {}),
+    },
+    ...options,
+  });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} al solicitar ${url}`);
+  }
   return res.text();
 }
 
-function strip(html) {
-  return String(html || "").replace(/<[^>]*>/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, "\"").replace(/&#8217;/g, "'").replace(/\s+/g, " ").trim();
+function cleanId(slug) {
+  return String(slug || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
-function cleanId(value) {
-  return String(value || "item").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9._~-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 128) || "item";
-}
-
-export function parseCards(html, fallbackType = "movie") {
-  const out = [];
-  const rx = /<a\b(?=[^>]*\bhref="(https?:\/\/pelisplus\.autos\/(?:pelicula|serie)\/[^"?#]+)[^"]*")[^>]*>([\s\S]*?)<\/a>/gi;
-  let m;
+export function parseCards(html, defaultKind = "movie") {
+  const cardRegex =
+    /<a[^>]+href="(https:\/\/pelisplus\.autos\/(pelicula|serie)\/([^"\/]+)\/?)"[^>]*>([\s\S]*?)<\/a>/gi;
+  const items = [];
   const seen = new Set();
-  while ((m = rx.exec(html)) !== null) {
-    const ref = m[1];
-    if (seen.has(ref)) continue;
-    seen.add(ref);
-    const block = m[0];
-    const slug = ref.split("/").filter(Boolean).pop();
-    const title = strip((block.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i) || block.match(/(?:title|alt)="([^"]+)"/i) || [])[1]) || slug.replace(/-/g, " ");
-    const art = (block.match(/(?:src|data-src)="([^"]+)"/i) || block.match(/background-image:\s*url\(['"]?([^'")]+)['"]?\)/i) || [])[1] || null;
-    const year = (strip(block).match(/\b(19\d{2}|20\d{2})\b/) || [])[1];
-    const type = ref.includes("/serie/") ? "series" : fallbackType;
-    out.push({ id: cleanId(slug), ref, title, art, kind: type, type, year: year ? Number(year) : undefined });
+  let m;
+
+  while ((m = cardRegex.exec(html)) !== null) {
+    const href = m[1];
+    const rawKind = m[2];
+    const slug = cleanId(m[3]);
+    const inner = m[4];
+
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+
+    const kind = rawKind === "serie" ? "series" : defaultKind;
+
+    // Título limpio
+    const detailMatch = inner.match(
+      /<div class="item-detail"[^>]*><p>([\s\S]*?)<\/p>/i
+    );
+    const altMatch = inner.match(/alt="([^"]+)"/i);
+    let title = detailMatch
+      ? detailMatch[1].replace(/<[^>]+>/g, "").trim()
+      : altMatch
+      ? altMatch[1].replace(/^Poster\s+/i, "").trim()
+      : slug;
+
+    // Póster
+    const imgMatch = inner.match(/<img[^>]+(?:src|data-src)="([^"]+)"/i);
+    let poster = imgMatch ? imgMatch[1].trim() : "";
+    if (poster.startsWith("//")) poster = "https:" + poster;
+
+    // Backdrop panorámico
+    const backdropMatch = inner.match(/data-backdrop="([^"]+)"/i);
+    let backdrop = backdropMatch ? backdropMatch[1].trim() : "";
+    if (backdrop.startsWith("//")) backdrop = "https:" + backdrop;
+
+    // Año
+    const yearMatch = inner.match(/<span class="year[^"]*"[^>]*>(\d{4})<\/span>/i);
+    const year = yearMatch ? parseInt(yearMatch[1], 10) : undefined;
+
+    // Sinopsis
+    const overMatch = inner.match(
+      /<div class="card-hover-info-overview"><p>([\s\S]*?)<\/p>/i
+    );
+    const overview = overMatch
+      ? overMatch[1].replace(/<[^>]+>/g, "").trim()
+      : undefined;
+
+    // Géneros / Badges
+    const genreMatches = [...inner.matchAll(/<li>([^<]+)<\/li>/gi)].map((g) =>
+      g[1].trim()
+    );
+
+    items.push({
+      id: slug,
+      ref: href,
+      title,
+      kind,
+      type: kind,
+      poster,
+      art: poster,
+      backdrop: backdrop || undefined,
+      year,
+      overview,
+      description: overview,
+      badges: genreMatches.length > 0 ? genreMatches.slice(0, 3) : undefined,
+    });
+  }
+
+  return items;
+}
+
+export function parseHeroSlides(html) {
+  const cards = parseCards(html);
+  return cards.filter((c) => c.backdrop || c.poster).slice(0, 6);
+}
+
+function b64Decode(str) {
+  if (typeof atob === "function") return atob(str);
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  let out = "";
+  let i = 0;
+  const clean = String(str).replace(/[^A-Za-z0-9+/=]/g, "");
+  while (i < clean.length) {
+    const enc1 = chars.indexOf(clean.charAt(i++));
+    const enc2 = chars.indexOf(clean.charAt(i++));
+    const enc3 = chars.indexOf(clean.charAt(i++));
+    const enc4 = chars.indexOf(clean.charAt(i++));
+    const chr1 = (enc1 << 2) | (enc2 >> 4);
+    const chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+    const chr3 = ((enc3 & 3) << 6) | enc4;
+    out += String.fromCharCode(chr1);
+    if (enc3 !== 64 && enc3 !== -1) out += String.fromCharCode(chr2);
+    if (enc4 !== 64 && enc4 !== -1) out += String.fromCharCode(chr3);
   }
   return out;
 }
 
-export function parseHeroSlides(html) {
-  return parseCards(html).slice(0, 8);
-}
+export async function resolveNupload(nuploadUrl, referer = BASE_URL) {
+  const nuHtml = await fetchHtml(nuploadUrl, {
+    headers: { Referer: referer },
+  });
 
-export function decodeBase64(value) {
-  try {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let bits = 0, count = 0, result = "";
-    for (const char of String(value || "").replace(/=+$/, "")) {
-      const n = chars.indexOf(char);
-      if (n < 0) continue;
-      bits = (bits << 6) | n;
-      count += 6;
-      if (count >= 8) { count -= 8; result += String.fromCharCode((bits >> count) & 255); }
-    }
-    try { return decodeURIComponent(Array.from(result).map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, "0")}`).join("")); } catch (_) { return result; }
-  } catch (_) { return null; }
-}
+  const offsetMatch = nuHtml.match(
+    /parseInt\(atob\(value\)\.replace\([^)]*\)\)\s*-\s*(\d+)/
+  );
+  const arrayMatch = nuHtml.match(
+    /var\s+([A-Za-z0-9_]+)\s*=\s*(\[\"[^\"]+\"(?:,\"[^\"]+\")*\])/
+  );
 
-export function decodeNupload(html) {
-  const offset = html.match(/parseInt\(atob\(value\)\.replace\([^)]*\)\)\s*-\s*(\d+)/);
-  const array = html.match(/var\s+[A-Za-z0-9_]+\s*=\s*(\["[^"]+"(?:,"[^"]+")*\])/);
-  if (!offset || !array) return null;
-  let values;
-  try { values = JSON.parse(array[1]); } catch (_) { return null; }
-  const subtract = Number(offset[1]);
-  let base = "";
-  for (const encoded of values) {
-    const decoded = decodeBase64(encoded);
-    const digits = (decoded || "").replace(/\D/g, "");
-    if (!digits) return null;
-    base += String.fromCharCode(Number(digits) - subtract);
+  if (!offsetMatch || !arrayMatch) {
+    throw new Error("No se pudo descifrar el reproductor Nupload");
   }
-  const suffix = html.match(/var\s+sesz\s*=\s*["']([^"']+)["']/);
-  return suffix ? `${base}?s=${suffix[1]}` : base;
+
+  const offset = parseInt(offsetMatch[1], 10);
+  const arr = JSON.parse(arrayMatch[2]);
+  let baseUrl = "";
+  for (const val of arr) {
+    const dec = b64Decode(val);
+    const digits = dec.replace(/\D/g, "");
+    baseUrl += String.fromCharCode(parseInt(digits, 10) - offset);
+  }
+
+  const seszMatch = nuHtml.match(/var\s+sesz\s*=\s*["']([^"']+)["']/);
+  const streamUrl = seszMatch ? `${baseUrl}?s=${seszMatch[1]}` : baseUrl;
+
+  return {
+    url: streamUrl,
+    mime: "application/x-mpegURL",
+    headers: {
+      "User-Agent": HEADERS["User-Agent"],
+      "Referer": "https://nupload.my/",
+    },
+  };
 }
 
-export async function resolvePelisPlus(ref) {
-  const html = await pageHtml(ref);
-  const encoded = [...html.matchAll(/data-server="([^"]+)"/gi)].map((m) => m[1]);
-  for (const value of encoded) {
-    const server = decodeBase64(value);
-    if (!server || !/nupload\.my\/watch\//i.test(server)) continue;
-    const res = await fetchHtml(server, { headers: { Referer: `${BASE_URL}/` } });
-    const hostUrl = decodeNupload(await res.text());
-    if (!hostUrl) continue;
+export async function resolvePelisPlus(ref, preferredLang = "latino") {
+  const html = await fetchHtml(ref);
+
+  const serverRegex = /data-server="([^"]+)"/gi;
+  const servers = [];
+  let sm;
+  while ((sm = serverRegex.exec(html)) !== null) {
+    try {
+      const b64 = sm[1];
+      const decoded = b64Decode(b64);
+      if (decoded.startsWith("http")) {
+        servers.push(decoded);
+      }
+    } catch (_) {}
+  }
+
+  if (servers.length === 0) {
+    throw typeof kino !== "undefined" && kino.error
+      ? kino.error("unavailable", "No se encontraron servidores de reproducción en PelisPlus")
+      : new Error("No se encontraron servidores de reproducción");
+  }
+
+  // Priorizamos nupload
+  const nuploadServers = servers.filter((s) => s.includes("nupload"));
+  const chosenNupload = nuploadServers[0] || servers[0];
+
+  const alternatives = [];
+  let directStream = null;
+
+  for (const sUrl of nuploadServers) {
+    try {
+      const resolved = await resolveNupload(sUrl, ref);
+      if (!directStream) {
+        directStream = resolved;
+      } else {
+        alternatives.push({
+          name: "Nupload HLS (Alternativo)",
+          url: resolved.url,
+          mime: resolved.mime,
+        });
+      }
+    } catch (_) {}
+  }
+
+  if (directStream) {
     return {
-      url: hostUrl,
-      mime: "application/x-mpegURL",
-      headers: { Referer: "https://nupload.my/", "User-Agent": "Mozilla/5.0" }
+      ...directStream,
+      alternatives: alternatives.length > 0 ? alternatives : undefined,
     };
   }
-  throw new Error("PelisPlus no proporcionó un servidor Nupload reproducible");
-}
 
-export function parseEpisodes(html) {
-  const rx = /<a\b(?=[^>]*\bhref="(https?:\/\/pelisplus\.autos\/episodio\/[^"?#]+)[^"]*")[^>]*>([\s\S]*?)<\/a>/gi;
-  const out = []; let m; const seen = new Set();
-  while ((m = rx.exec(html)) !== null) {
-    const ref = m[1]; if (seen.has(ref)) continue; seen.add(ref);
-    const text = strip(m[0]);
-    const se = ref.match(/-(\d+)x(\d+)\/?$/i) || text.match(/(\d+)\s*[xX]\s*(\d+)/);
-    const art = (m[0].match(/(?:src|data-src)="([^"]+)"/i) || [])[1] || null;
-    out.push({ season: se ? Number(se[1]) : 1, number: se ? Number(se[2]) : out.length + 1, ref, title: text || `Episodio ${out.length + 1}`, still: art });
-  }
-  return out.sort((a, b) => a.season - b.season || a.number - b.number);
+  throw typeof kino !== "undefined" && kino.error
+    ? kino.error("unavailable", "No hay servidores de video disponibles actualmente")
+    : new Error("No hay servidores de video reproducibles disponibles");
 }

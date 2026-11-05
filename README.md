@@ -1,49 +1,50 @@
 # PelisPlus — Plugin para Kino (v8.0.0)
 
-Plugin oficial de PelisPlus para la aplicación [Kino](https://kino.app). Ofrece catálogo completo de películas, series y anime en alta definición con opciones de audio en Español Latino, Castellano y Subtitulado, filtros por géneros, integración con `kino.meta` (TMDB) y una interfaz declarativa optimizada tanto para móviles como para TV (D-pad y mando).
+Plugin oficial de PelisPlus para la aplicación [Kino](https://kino.app). Ofrece catálogo completo de películas, series de televisión y anime en alta definición con audio en Español Latino, Castellano y Subtitulado, búsqueda nativa, integración con `kino.meta` (TMDB) y una interfaz nativa declarativa optimizada para Android TV (D-pad y control remoto) y dispositivos móviles.
+
+> **Autor**: JuanDEVYT  
+> **Versión**: 8.0.0  
+> **Créditos**: Creado por JuandreXter
+
+---
 
 ## Características
 
-- **Catálogo Completo**: Películas, series de televisión y anime actualizados directamente desde PelisPlus.
-- **Integración con `kino.meta`**: Enriquecimiento automático de sinopsis oficial, reparto, directores y trailers en español.
-- **Filtros por Géneros**: Acceso directo a categorías de Terror, Acción, Comedia, Ciencia Ficción, Suspenso y Animación.
-- **Icono Oficial e Identidad Visual**: Icono y banner originales de PelisPlus.
-- **Múltiples Audios**: Soporte para audio Latino, Castellano y Subtitulado, con selector de preferencia de idioma predeterminado en Ajustes.
-- **Reproducción Directa en HD**: Resolución automática de streams HLS (m3u8) a través de Nupload → ibra.lat.
-- **Interfaz Nativa Declarativa (`screen`)**: Compatible con Android TV y pantallas táctiles.
-- **Paginación**: Navegación continua por páginas en todas las secciones del catálogo.
+- **Identificación en logs**: Muestra al inicio y en cada acción el banner oficial `[PelisPlus v8.0.0] Creado por JuandreXter` con trazabilidad completa de peticiones.
+- **Búsqueda robusta**: Consulta directa sobre el motor de búsqueda en tiempo real de PelisPlus (`/?s=...`), admitiendo títulos de películas, series y anime.
+- **Hero Slider con Backdrops 1080p y Logos**: Portada con carrusel destacado interactivo, sinopsis, año y controles directos de reproducción y detalles.
+- **Rieles temáticos dinámicos**:
+  - Destacados PelisPlus
+  - Películas Recientes
+  - Series Recientes
+  - Películas de Estreno
+  - Terror · Top Semanal
+  - Acción · Top Semanal
+  - Animación en HD
+- **Integración con `kino.meta`**: Enriquecimiento automático de sinopsis oficial, reparto, directores, trailers y posters/backdrops en alta resolución desde TMDB.
+- **Resolvers de video directos HLS**: Decodificación automática de reproductores Nupload / Ibra (`sv*.ibra.lat`) con streams `.m3u8` adaptativos hasta 1080p.
+- **Multi-audio con selector**: Configuración nativa del idioma preferido (Español Latino, Castellano o Subtitulado).
+- **Interfaz nativa declarativa (`screen`)**:
+  - Compatible con Android TV (D-pad, flechas del control remoto).
+  - Pestañas superiores: Inicio, Películas, Series y Animación.
+  - Buscador integrado con historial de búsqueda.
+  - Pantalla de ajustes nativa con selector de idioma e información del autor.
+
+---
+
+## Verificación
+
+```bash
+npm run build
+npm test
+```
+
+Todas las pruebas se ejecutan contra datos reales de `pelisplus.autos`.
 
 ## Instalación en Kino
 
-1. Abre Kino.
-2. Ve a **Ajustes** → **Plugins** → **Añadir plugin**.
-3. Escribe:
-   ```
-   JuanDEVYT/PelisPlusAutos_plugin
-   ```
-4. Acepta la instalación.
-
-## Desarrollo
-
-```bash
-npm install
-npm run build      # Compila plugin.js
-npm test           # Ejecuta pruebas automatizadas
-npm run validate   # Valida con el SDK de Kino
-```
-
-## Estructura
+Ingresa en Kino > Extensiones / Plugins e introduce el identificador del repositorio:
 
 ```
-kino-plugin.json   → Manifiesto del plugin
-src/plugin.js      → Punto de entrada (search, home, browse, episodes, resolve, screen)
-src/pelisplus.js   → Scraper y resolver de servidores Nupload/ibra.lat
-src/utils.js       → Utilidades HTTP compartidas
-src/browse/        → Interfaz declarativa nativa (screen)
-icon.png           → Icono oficial de PelisPlus
-logo.png           → Banner oficial de PelisPlus
+JuanDEVYT/PelisPlusAutos_plugin
 ```
-
-## Licencia
-
-Uso personal. Este plugin no aloja ni distribuye contenido; solo indexa enlaces públicos de pelisplus.autos.
