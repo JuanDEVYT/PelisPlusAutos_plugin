@@ -1,0 +1,62 @@
+{
+  "id": "pelisplus",
+  "name": "PelisPlus",
+  "version": "8.0.0",
+  "apiVersion": 6,
+  "entry": "plugin.js",
+  "icon": "icon.png",
+  "hosts": [
+    "pelisplus.autos",
+    "nupload.my",
+    "ibra.lat",
+    "image.tmdb.org"
+  ],
+  "streamHosts": "any",
+  "capabilities": [
+    "search",
+    "home",
+    "browse",
+    "episodes",
+    "resolve"
+  ],
+  "enhancements": {
+    "14": {
+      "capabilities": ["screen"],
+      "screen": {
+        "label": "PelisPlus",
+        "labelEn": "PelisPlus",
+        "icon": "movie",
+        "menuOpens": "screen",
+        "opensFrom": ["menu", "settings"],
+        "settingsButton": { "label": "Abrir PelisPlus", "labelEn": "Open PelisPlus" },
+        "settingsIn": "screen"
+      }
+    },
+    "19": { "capabilities": ["screen"] }
+  },
+  "settings": [
+    {
+      "key": "preferredLang",
+      "type": "select",
+      "label": "Idioma de audio preferido",
+      "hint": "Selecciona el idioma prioritario al buscar enlaces",
+      "options": [
+        { "value": "latino", "label": "Latino" },
+        { "value": "castellano", "label": "Castellano" },
+        { "value": "subtitulado", "label": "Subtitulado" }
+      ],
+      "default": "latino"
+    }
+  ],
+  "theme": {
+    "accent": "#FF6B00",
+    "onAccent": "#0B0D12",
+    "background": "#0B0D12",
+    "surface": "#11151D",
+    "highlight": "#FF9E4D"
+  },
+  "description": "Plugin oficial de PelisPlus para Kino — Películas, series y anime con audio Latino, Castellano y Subtitulado en HD",
+  "homepage": "https://pelisplus.autos/",
+  "repo": "JuanDEVYT/PelisPlusAutos_plugin",
+  "consent": "Puede reproducir video desde cualquier servidor que indique"
+}
