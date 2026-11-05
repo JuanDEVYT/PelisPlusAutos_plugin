@@ -16,7 +16,9 @@ function printBanner() {
   console.log(`${LOG_PREFIX} ${AUTHOR_TAG}`);
 }
 
-// Log emitido inmediatamente al cargar el módulo del plugin
+// Log emitido una vez por cada carga del módulo del plugin.
+printBanner();
+
 printBanner();
 
 function log(...args) {
@@ -90,7 +92,6 @@ function getBrowseApp() {
 }
 
 export async function search(query) {
-  printBanner();
   const q = typeof query === "string" ? query : (query && query.q) || "";
   log(`search(q="${q}"): iniciando búsqueda...`);
   if (!q.trim()) {
@@ -110,7 +111,6 @@ export async function search(query) {
 }
 
 export async function home() {
-  printBanner();
   log("home(): cargando carrusel y rieles temáticos...");
   try {
     const [estrenosHtml, moviesHtml, seriesHtml, terrorHtml, accionHtml, animacionHtml] =
@@ -194,7 +194,6 @@ export async function home() {
 }
 
 export async function browse(ref, cursor) {
-  printBanner();
   const page = parseInt(cursor || "1", 10);
   log(`browse(ref="${ref}", cursor="${cursor}", page=${page})`);
 
@@ -242,7 +241,6 @@ export async function browse(ref, cursor) {
 }
 
 export async function episodes(ref) {
-  printBanner();
   log(`episodes(ref="${ref}"): extrayendo catálogo de capítulos...`);
   try {
     const html = await fetchHtml(ref);
@@ -347,7 +345,6 @@ export async function episodes(ref) {
 }
 
 export async function resolve(ref) {
-  printBanner();
   log(`resolve(ref="${ref}"): buscando streams HLS...`);
   const preferred =
     (typeof kino !== "undefined" &&
@@ -365,7 +362,6 @@ export async function resolve(ref) {
 }
 
 export async function categories() {
-  printBanner();
   log("categories(): listando géneros de PelisPlus");
   return [
     { id: "peliculas", ref: "peliculas", title: "Películas", titleEn: "Movies", icon: "movie" },
@@ -381,7 +377,6 @@ export async function categories() {
 }
 
 export async function section(ctx) {
-  printBanner();
   const tab = ctx && typeof ctx === "object" ? ctx.tab : undefined;
   log(`section(tab="${tab}")`);
   const tabs = [
@@ -400,14 +395,12 @@ export async function section(ctx) {
 }
 
 export async function screen(ctx) {
-  printBanner();
   log("screen(): generando scaffold nativo declarativo");
   const app = getBrowseApp();
   return app.view(ctx);
 }
 
 export async function screenEvent(ev) {
-  printBanner();
   log(`screenEvent(ev="${ev && ev.name}"): despachando evento`);
   const app = getBrowseApp();
   return app.event(ev);

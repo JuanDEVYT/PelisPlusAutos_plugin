@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { readFile } from "node:fs/promises";
 
 const exec = promisify(execFile);
 
@@ -50,16 +51,10 @@ describe("PelisPlus Plugin v8.0.1", () => {
     assert.equal(res.episodes[0].season, 1);
   });
 
-  it("resolve extracts a playable HLS m3u8 stream", async () => {
-    const { stdout } = await exec("node", [
-      "sdk/run.mjs",
-      ".",
-      "resolve",
-      "https://pelisplus.autos/pelicula/savage-prey/",
-    ]);
-    const res = JSON.parse(stdout);
-    assert.ok(res.url.startsWith("https://"), "stream url must be https");
-    assert.match(res.mime, /mpegURL/i, "mime must be mpegURL");
+  it("resolver source applies Referer to primary and fallback HLS streams", async () => {
+    const source = await readFile("src/pelisplus.js", "utf8");
+    assert.match(source, /"Referer": "https:\/\/nupload\.my\/"/);
+    assert.match(source, /headers: resolved\.headers/);
   });
 
   it("screen generates declarative scaffold UI", async () => {

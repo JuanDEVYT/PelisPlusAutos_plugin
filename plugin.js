@@ -1092,7 +1092,8 @@ async function resolvePelisPlus(ref, preferredLang = "latino") {
         alternatives.push({
           name: "Nupload HLS (Alternativo)",
           url: resolved.url,
-          mime: resolved.mime
+          mime: resolved.mime,
+          headers: resolved.headers
         });
       }
     } catch (_) {
@@ -1114,6 +1115,7 @@ var LOG_PREFIX = `[PelisPlus v${PLUGIN_VERSION}]`;
 function printBanner() {
   console.log(`${LOG_PREFIX} ${AUTHOR_TAG}`);
 }
+printBanner();
 printBanner();
 function log(...args) {
   console.log(LOG_PREFIX, ...args);
@@ -1183,7 +1185,6 @@ function getBrowseApp() {
   return browseApp;
 }
 async function search(query) {
-  printBanner();
   const q = typeof query === "string" ? query : query && query.q || "";
   log(`search(q="${q}"): iniciando b\xFAsqueda...`);
   if (!q.trim()) {
@@ -1202,7 +1203,6 @@ async function search(query) {
   }
 }
 async function home() {
-  printBanner();
   log("home(): cargando carrusel y rieles tem\xE1ticos...");
   try {
     const [estrenosHtml, moviesHtml, seriesHtml, terrorHtml, accionHtml, animacionHtml] = await Promise.all([
@@ -1281,7 +1281,6 @@ async function home() {
   }
 }
 async function browse(ref, cursor) {
-  printBanner();
   const page = parseInt(cursor || "1", 10);
   log(`browse(ref="${ref}", cursor="${cursor}", page=${page})`);
   let baseUrl = "";
@@ -1324,7 +1323,6 @@ async function browse(ref, cursor) {
   }
 }
 async function episodes(ref) {
-  printBanner();
   log(`episodes(ref="${ref}"): extrayendo cat\xE1logo de cap\xEDtulos...`);
   try {
     const html = await fetchHtml(ref);
@@ -1405,7 +1403,6 @@ async function episodes(ref) {
   }
 }
 async function resolve(ref) {
-  printBanner();
   log(`resolve(ref="${ref}"): buscando streams HLS...`);
   const preferred = typeof kino !== "undefined" && kino.config && kino.config.get("preferredLang") || "latino";
   try {
@@ -1418,7 +1415,6 @@ async function resolve(ref) {
   }
 }
 async function categories() {
-  printBanner();
   log("categories(): listando g\xE9neros de PelisPlus");
   return [
     { id: "peliculas", ref: "peliculas", title: "Pel\xEDculas", titleEn: "Movies", icon: "movie" },
@@ -1433,7 +1429,6 @@ async function categories() {
   ];
 }
 async function section(ctx) {
-  printBanner();
   const tab = ctx && typeof ctx === "object" ? ctx.tab : void 0;
   log(`section(tab="${tab}")`);
   const tabs = [
@@ -1451,13 +1446,11 @@ async function section(ctx) {
   };
 }
 async function screen(ctx) {
-  printBanner();
   log("screen(): generando scaffold nativo declarativo");
   const app = getBrowseApp();
   return app.view(ctx);
 }
 async function screenEvent(ev) {
-  printBanner();
   log(`screenEvent(ev="${ev && ev.name}"): despachando evento`);
   const app = getBrowseApp();
   return app.event(ev);

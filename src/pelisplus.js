@@ -222,6 +222,7 @@ export async function resolvePelisPlus(ref, preferredLang = "latino") {
           name: "Nupload HLS (Alternativo)",
           url: resolved.url,
           mime: resolved.mime,
+          headers: resolved.headers,
         });
       }
     } catch (_) {}
