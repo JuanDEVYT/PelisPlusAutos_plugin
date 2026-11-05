@@ -7,7 +7,7 @@ import { readFile } from "node:fs/promises";
 
 const exec = promisify(execFile);
 
-describe("PelisPlus Plugin v8.5.0", () => {
+describe("PelisPlus Plugin v8.5.1", () => {
   it("plugin validation passes Kino sdk", async () => {
     const { stdout, stderr } = await exec("node", ["sdk/validate.mjs", ".", "--repo", "JuanDEVYT/PelisPlusAutos_plugin"]);
     const out = (stdout || "") + "\n" + (stderr || "");

@@ -1,14 +1,16 @@
-// Plugin oficial de PelisPlus para Kino (v8.5.0)
+// Plugin oficial de PelisPlus para Kino (v8.5.1)
 import { makeBrowse } from "./browse/index.js";
+import { getDetails } from "./details.js";
 import {
   BASE_URL,
   fetchHtml,
   parseCards,
   parseHeroSlides,
+  imageUrl,
   resolvePelisPlus,
 } from "./pelisplus.js";
 
-const PLUGIN_VERSION = "8.5.0";
+const PLUGIN_VERSION = "8.5.1";
 const AUTHOR_TAG = "Creado por JuandreXter";
 const LOG_PREFIX = `[PelisPlus v${PLUGIN_VERSION}]`;
 
@@ -17,8 +19,6 @@ function printBanner() {
 }
 
 // Log emitido una vez por cada carga del módulo del plugin.
-printBanner();
-
 printBanner();
 
 function log(...args) {
@@ -341,6 +341,18 @@ export async function episodes(ref) {
   } catch (err) {
     logError(`episodes("${ref}") falló:`, err.message);
     throw err;
+  }
+}
+
+export async function details(ref) {
+  log(`details(ref="${ref}"): extrayendo ficha y metadatos TMDB...`);
+  try {
+    const result = await getDetails(ref, typeof kino !== "undefined" ? kino : null);
+    log(`details(): ficha cargada para "${result.title || "sin título"}"${result.ids?.tmdb ? " con TMDB" : ""}`);
+    return result;
+  } catch (err) {
+    logError(`details("${ref}") falló:`, err.message);
+    return null;
   }
 }
 

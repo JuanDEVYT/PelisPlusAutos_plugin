@@ -179,6 +179,7 @@ export async function resolveNupload(nuploadUrl, referer = BASE_URL) {
     headers: {
       "User-Agent": HEADERS["User-Agent"],
       "Referer": "https://nupload.my/",
+      "Origin": "https://nupload.my",
     },
   };
 }
