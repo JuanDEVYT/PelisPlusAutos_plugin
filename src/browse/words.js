@@ -29,7 +29,16 @@ const WORDS_RAW = {
   aboutAuthor: ["Creado por JuandreXter", "Created by JuandreXter"],
   aboutVersion: ["Versión 8.0.0", "Version 8.0.0"],
   watchNow: ["Reproducir", "Play"],
-  moreInfo: ["Ver detalles", "More details"]
+  moreInfo: ["Ver detalles", "More details"],
+  brWatch: ["Reproducir", "Play"],
+  brInfo: ["Ver detalles", "Details"],
+  brSettings: ["Ajustes", "Settings"],
+  brClose: ["Cerrar", "Close"],
+  brSearch: ["Buscar", "Search"],
+  brRecent: ["Continuar viendo", "Continue watching"],
+  brEmpty: ["No hay contenido disponible.", "No content available."],
+  brFailed: ["No se pudo cargar el contenido.", "Could not load content."],
+  brRetry: ["Reintentar", "Retry"]
 };
 
 export const WORDS = Object.fromEntries(

@@ -150,7 +150,16 @@ var WORDS_RAW = {
   aboutAuthor: ["Creado por JuandreXter", "Created by JuandreXter"],
   aboutVersion: ["Versi\xF3n 8.0.0", "Version 8.0.0"],
   watchNow: ["Reproducir", "Play"],
-  moreInfo: ["Ver detalles", "More details"]
+  moreInfo: ["Ver detalles", "More details"],
+  brWatch: ["Reproducir", "Play"],
+  brInfo: ["Ver detalles", "Details"],
+  brSettings: ["Ajustes", "Settings"],
+  brClose: ["Cerrar", "Close"],
+  brSearch: ["Buscar", "Search"],
+  brRecent: ["Continuar viendo", "Continue watching"],
+  brEmpty: ["No hay contenido disponible.", "No content available."],
+  brFailed: ["No se pudo cargar el contenido.", "Could not load content."],
+  brRetry: ["Reintentar", "Retry"]
 };
 var WORDS = Object.fromEntries(
   Object.entries(WORDS_RAW).map(([k, [es, en]]) => [
@@ -238,6 +247,7 @@ var slideNode = (s) => ({
   title: s.title,
   text: s.text,
   image: s.image,
+  ...s.logo ? { logo: s.logo } : {},
   buttons: [
     {
       type: "ElevatedButton",
@@ -667,7 +677,7 @@ function makeBrowse({ kino: kino2, loadTab, searchTitles }) {
   const memo = /* @__PURE__ */ new Map();
   const log2 = (...a) => {
     try {
-      kino2.log("[gnulahd]", ...a);
+      kino2.log("[PelisPlus]", ...a);
     } catch (_) {
     }
   };
@@ -922,6 +932,12 @@ var HEADERS = {
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
   "Accept-Language": "es-ES,es;q=0.9,en;q=0.8"
 };
+function imageUrl(url) {
+  const source = String(url || "").trim();
+  if (!source || !/^https?:\/\//i.test(source)) return source;
+  if (!/pelisplus\.autos\/cdn\//i.test(source)) return source;
+  return `https://external-content.duckduckgo.com/iu/?u=${encodeURIComponent(source)}`;
+}
 async function fetchHtml(url, options = {}) {
   const client = typeof kino !== "undefined" && kino.fetch ? kino.fetch.bind(kino) : globalThis.fetch;
   const res = await client(url, {
@@ -978,9 +994,9 @@ function parseCards(html, defaultKind = "movie") {
       title,
       kind,
       type: kind,
-      poster,
-      art: poster,
-      backdrop: backdrop || void 0,
+      poster: imageUrl(poster),
+      art: imageUrl(poster),
+      backdrop: imageUrl(backdrop) || void 0,
       year,
       overview,
       description: overview,
@@ -1092,7 +1108,7 @@ async function resolvePelisPlus(ref, preferredLang = "latino") {
 }
 
 // src/plugin.js
-var PLUGIN_VERSION = "8.0.0";
+var PLUGIN_VERSION = "8.0.1";
 var AUTHOR_TAG = "Creado por JuandreXter";
 var LOG_PREFIX = `[PelisPlus v${PLUGIN_VERSION}]`;
 function printBanner() {

@@ -64,7 +64,7 @@ export function makeBrowse({ kino, loadTab, searchTitles }) {
   const memo = new Map();
   const log = (...a) => {
     try {
-      kino.log("[gnulahd]", ...a);
+      kino.log("[PelisPlus]", ...a);
     } catch (_) {}
   };
   const get = (k) => {

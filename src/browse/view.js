@@ -75,6 +75,7 @@ const slideNode = (s) => ({
   title: s.title,
   text: s.text,
   image: s.image,
+  ...(s.logo ? { logo: s.logo } : {}),
   buttons: [
     {
       type: "ElevatedButton",

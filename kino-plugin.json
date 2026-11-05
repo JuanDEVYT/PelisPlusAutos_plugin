@@ -1,7 +1,7 @@
 {
   "id": "pelisplus",
   "name": "PelisPlus",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "apiVersion": 6,
   "entry": "plugin.js",
   "icon": "icon.png",
@@ -49,11 +49,11 @@
     }
   ],
   "theme": {
-    "accent": "#FF6B00",
-    "onAccent": "#0B0D12",
-    "background": "#0B0D12",
-    "surface": "#11151D",
-    "highlight": "#FF9E4D"
+    "accent": "#007ACC",
+    "onAccent": "#FFFFFF",
+    "background": "#080C14",
+    "surface": "#101826",
+    "highlight": "#60A5FA"
   },
   "description": "Plugin oficial de PelisPlus para Kino — Películas, series y anime con audio Latino, Castellano y Subtitulado en HD",
   "homepage": "https://pelisplus.autos/",

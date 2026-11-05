@@ -10,6 +10,15 @@ const HEADERS = {
   "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
 };
 
+// El CDN de PelisPlus bloquea imágenes sin Referer. Kino renderiza la UI sin
+// ese encabezado, así que se usa un proxy de imágenes para posters y backdrops.
+export function imageUrl(url) {
+  const source = String(url || "").trim();
+  if (!source || !/^https?:\/\//i.test(source)) return source;
+  if (!/pelisplus\.autos\/cdn\//i.test(source)) return source;
+  return `https://external-content.duckduckgo.com/iu/?u=${encodeURIComponent(source)}`;
+}
+
 export async function fetchHtml(url, options = {}) {
   const client =
     typeof kino !== "undefined" && kino.fetch
@@ -97,9 +106,9 @@ export function parseCards(html, defaultKind = "movie") {
       title,
       kind,
       type: kind,
-      poster,
-      art: poster,
-      backdrop: backdrop || undefined,
+      poster: imageUrl(poster),
+      art: imageUrl(poster),
+      backdrop: imageUrl(backdrop) || undefined,
       year,
       overview,
       description: overview,
